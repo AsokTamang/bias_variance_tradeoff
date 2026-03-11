@@ -80,6 +80,36 @@ def plot_regularized_error(reg_params,degree,X_train,X_cv,Y_train,Y_cv):
     plt.legend()
     plt.show()
 
+def plot_learning_curve(degree,X_train,X_cv,Y_train,Y_cv):
+    training_error = []
+    cv_error = []
+    precents =[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    sample_hist = []  #sample_hist stores the total sample size of both training as well as cross_validation datasets at each iteration
+    for percent in precents:
+        train_sample_size = round(len(X_train) * (percent/100))   #getting the trainig sample size based on current percent
+        cv_sample_size = round(len(X_cv) * (percent/100))         #same here for the cross_validation dataset
+        sc = StandardScaler()
+        poly = PolynomialFeatures(degree=degree,include_bias=False)
+        X_train_poly = poly.fit_transform(X_train[:train_sample_size])
+        X_train_scaled = sc.fit_transform(X_train_poly)
+        X_cv_poly = poly.transform(X_cv[:cv_sample_size])
+        X_cv_scaled = sc.transform(X_cv_poly)
+        lr = LinearRegression()
+        lr.fit(X_train_scaled,Y_train[:train_sample_size])   #training the model, the target variable size must match with the X size 
+        Y_train_predicted=lr.predict(X_train_scaled)
+        training_error.append(mean_squared_error(Y_train_predicted,Y_train[:train_sample_size]) / 2)
+
+        Y_cv_predicted=lr.predict(X_cv_scaled)
+        cv_error.append(mean_squared_error(Y_cv_predicted,Y_cv[:cv_sample_size]) / 2)
+
+        sample_hist.append(train_sample_size+cv_sample_size)
+    plt.plot(sample_hist,training_error,label="Training Error",c='b',marker='o')
+    plt.plot(sample_hist,cv_error,label="CV Error",c='r',marker='o')
+    plt.xlabel('Total number of samples')
+    plt.ylabel('Mean Squared Error')
+    plt.legend()
+    plt.show()
+
 
 
 
