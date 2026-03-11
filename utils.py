@@ -1,5 +1,5 @@
 import tensorflow as tf
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.preprocessing import StandardScaler,PolynomialFeatures
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
@@ -17,7 +17,8 @@ def split_data(X,Y):
 
 
 
-def plot_error_rate_polydegree(degrees,X_train,X_cv,Y_train,Y_cv,baseline):
+#this function plots the training error and cross_validation error based on the different degrees of polynomial
+def plot_error_rate_polydegree(degrees,X_train,X_cv,Y_train,Y_cv):
     training_error = []
     cv_error = []
     degrees_history = []
@@ -44,7 +45,6 @@ def plot_error_rate_polydegree(degrees,X_train,X_cv,Y_train,Y_cv,baseline):
 
     plt.plot(degrees_history,training_error,label="Training Error",c='b',marker='o')
     plt.plot(degrees_history,cv_error,label="CV Error",c='r',marker='o')
-    plt.plot(degrees_history,np.repeat(baseline,len(degrees_history)),linestyle='--',label='Baseline')
     plt.legend()
     plt.xlabel("Degrees")
     plt.ylabel("Mean Squared Error")
@@ -52,6 +52,33 @@ def plot_error_rate_polydegree(degrees,X_train,X_cv,Y_train,Y_cv,baseline):
 
 
 
+#this function plot the training as well as cross_Validation error based on different regularization parameters
+def plot_regularized_error(reg_params,degree,X_train,X_cv,Y_train,Y_cv):
+    training_error = []
+    cv_error = []
+    reg_history = []
+    for reg in reg_params:
+        sc = StandardScaler()
+        poly = PolynomialFeatures(degree=degree,include_bias=False)
+        X_train_poly = poly.fit_transform(X_train)
+        X_train_scaled = sc.fit_transform(X_train_poly)
+        X_cv_poly = poly.transform(X_cv)
+        X_cv_scaled = sc.transform(X_cv_poly)
+        lr = LinearRegression()
+        lr=Ridge(alpha=reg)  #applying the regularization
+        lr.fit(X_train_scaled,Y_train)   #training the model
+        Y_train_predicted=lr.predict(X_train_scaled)
+        training_error.append(mean_squared_error(Y_train_predicted,Y_train) / 2)
+
+        Y_cv_predicted=lr.predict(X_cv_scaled)
+        cv_error.append(mean_squared_error(Y_cv_predicted,Y_cv) / 2)
+        reg_history.append(reg)
+    plt.plot(reg_history,training_error,label="Training Error",c='b',marker='o')
+    plt.plot(reg_history,cv_error,label="CV Error",c='r',marker='o')
+    plt.xlabel('Regularization Parameter')
+    plt.ylabel('Mean Squared Error')
+    plt.legend()
+    plt.show()
 
 
 
