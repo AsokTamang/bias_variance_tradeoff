@@ -115,5 +115,36 @@ def plot_learning_curve(degree,X_train,X_cv,Y_train,Y_cv):
 
 
 
+def gen_data(m, seed=1, scale=0.7):
+    #generating a data set based on a x^2 with added noise
+    c = 0
+    x_train = np.linspace(0,49,m)
+    np.random.seed(seed)
+    y_ideal = x_train**2 + c
+    y_train = y_ideal + scale * y_ideal*(np.random.sample((m,))-0.5)
+    x_ideal = x_train #for redraw when new data included in X
+    return x_train, y_train, x_ideal, y_ideal
 
 
+
+class Lin_model:
+    def __init__(self,degree,regularization=False,lambda_=0):  #this function designs our linear model
+        self.linear_model = LinearRegression()
+        if regularization:
+           self.linear_model=Ridge(alpha=lambda_)   #if regularization is used then we use the lambda or regularization term
+        self.poly = PolynomialFeatures(degree=degree,include_bias=False)
+        self.scalar = StandardScaler()
+
+    def fit(self,X_train,y_train):
+        X_train_mapped = self.poly.fit_transform(X_train.reshape(-1,1))  #as our training data is in 1D shaped, so we are converting them into 2D
+        X_train_scaled = self.scalar.fit_transform(X_train_mapped)
+        self.linear_model.fit(X_train_scaled,y_train)  #training the model
+
+    def predict(self,X_test):
+        X_test_mapped = self.poly.transform(X_test.reshape(-1,1))  #same here
+        X_test_scaled = self.scalar.transform(X_test_mapped)
+        y_hat = self.linear_model.predict(X_test_scaled)
+        return y_hat
+    def mse(self,y_test,y_hat):
+        mean_s_error = mean_squared_error(y_test,y_hat) / 2
+        return mean_s_error

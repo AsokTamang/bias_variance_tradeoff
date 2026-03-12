@@ -145,6 +145,6 @@ class Lin_model:
         X_test_scaled = self.scalar.transform(X_test_mapped)
         y_hat = self.linear_model.predict(X_test_scaled)
         return y_hat
-    def mse(self,y_hat,y_test):
+    def mse(self,y_test,y_hat):
         mean_s_error = mean_squared_error(y_test,y_hat) / 2
         return mean_s_error
