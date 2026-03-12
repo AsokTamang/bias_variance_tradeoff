@@ -60,10 +60,13 @@ def plot_regularized_error(reg_params,degree,X_train,X_cv,Y_train,Y_cv):
     for reg in reg_params:
         sc = StandardScaler()
         poly = PolynomialFeatures(degree=degree,include_bias=False)
+        #for training data
         X_train_poly = poly.fit_transform(X_train)
         X_train_scaled = sc.fit_transform(X_train_poly)
+        #for cross_validation data
         X_cv_poly = poly.transform(X_cv)
         X_cv_scaled = sc.transform(X_cv_poly)
+        
         lr = LinearRegression()
         lr=Ridge(alpha=reg)  #applying the regularization
         lr.fit(X_train_scaled,Y_train)   #training the model
@@ -102,7 +105,7 @@ def plot_learning_curve(degree,X_train,X_cv,Y_train,Y_cv):
         Y_cv_predicted=lr.predict(X_cv_scaled)
         cv_error.append(mean_squared_error(Y_cv_predicted,Y_cv[:cv_sample_size]) / 2)
 
-        sample_hist.append(train_sample_size+cv_sample_size)
+        sample_hist.append(train_sample_size+cv_sample_size)  #total sample at each iteration is the sum of training sample and cross_validation sample
     plt.plot(sample_hist,training_error,label="Training Error",c='b',marker='o')
     plt.plot(sample_hist,cv_error,label="CV Error",c='r',marker='o')
     plt.xlabel('Total number of samples')
@@ -112,5 +115,13 @@ def plot_learning_curve(degree,X_train,X_cv,Y_train,Y_cv):
 
 
 
-
+def gen_data(m, seed=1, scale=0.7):
+    #generating a data set based on a x^2 with added noise
+    c = 0
+    x_train = np.linspace(0,49,m)
+    np.random.seed(seed)
+    y_ideal = x_train**2 + c
+    y_train = y_ideal + scale * y_ideal*(np.random.sample((m,))-0.5)
+    x_ideal = x_train #for redraw when new data included in X
+    return x_train, y_train, x_ideal, y_ideal
 
