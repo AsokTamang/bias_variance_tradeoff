@@ -148,3 +148,24 @@ class Lin_model:
     def mse(self,y_test,y_hat):
         mean_s_error = mean_squared_error(y_test,y_hat) / 2
         return mean_s_error
+
+
+def plt_train_test(X_train, y_train, X_test, y_test, x, y_pred, x_ideal, y_ideal, degree):
+    fig, ax = plt.subplots(1,1, figsize=(4,4))
+    fig.canvas.toolbar_visible = False
+    fig.canvas.header_visible = False
+    fig.canvas.footer_visible = False
+
+    ax.set_title("Poor Performance on Test Data",fontsize = 12)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+
+    ax.scatter(X_train, y_train, color = "red",label="train")
+    ax.scatter(X_test, y_test,color = "blue", label="test")
+    ax.set_xlim(ax.get_xlim())
+    ax.set_ylim(ax.get_ylim())
+    ax.plot(x, y_pred,  lw=0.5, label=f"predicted, degree={degree}")
+    ax.plot(x_ideal, y_ideal, "--", color = "orangered", label="y_ideal", lw=1)
+    ax.legend(loc='upper left')
+    plt.tight_layout()
+    plt.show()
