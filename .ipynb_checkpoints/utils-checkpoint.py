@@ -9,6 +9,11 @@ from sklearn.datasets import make_blobs
 
 
 
+
+dlc = dict(dlblue = '#0096ff', dlorange = '#FF9300', dldarkred='#C00000', dlmagenta='#FF40FF', dlpurple='#7030A0', dldarkblue =  '#0D5BDC')
+dlblue = '#0096ff'; dlorange = '#FF9300'; dldarkred='#C00000'; dlmagenta='#FF40FF'; dlpurple='#7030A0'; dldarkblue =  '#0D5BDC'
+dlcolors = [dlblue, dlorange, dldarkred, dlmagenta, dlpurple]
+
 #this function is used for splitting the datasets into training,cross_Validation and test datasets
 def split_data(X,Y):
     X_train, X_, Y_train, Y_ = train_test_split(X, Y, test_size = 0.4, random_state = 1)
@@ -204,4 +209,53 @@ def gen_blobs():
     X, y = make_blobs(n_samples=m, centers=centers, cluster_std=std, random_state=2, n_features=2)
     return (X, y, centers, classes, std)
     
-    
+
+
+def eval_cat_err(y, yhat):
+    """ 
+    Calculate the categorization error
+    Args:
+      y    : (ndarray  Shape (m,) or (m,1))  target value of each example
+      yhat : (ndarray  Shape (m,) or (m,1))  predicted value of each example
+    Returns:|
+      err: (scalar)             
+    """
+    m = len(y)
+    incorrect = 0
+    for i in range(m):
+        if yhat[i] != y[i]:
+            incorrect += 1
+    err = incorrect/m
+    return(err)
+
+
+def make_prediction(model,x):
+    return model.predict(x)
+
+
+
+def plot_iterate(lambdas, models, X_train, y_train, X_cv, y_cv):
+    err_train = np.zeros(len(lambdas))
+    err_cv = np.zeros(len(lambdas))
+    for i in range(len(models)):
+        y_hat_train = np.argmax( tf.nn.softmax(make_prediction(models[i],X_train)), axis=1) #as our neural network model used linear activation as the outer layer, so we are using softmax here 
+        y_hat_cv =  np.argmax( tf.nn.softmax(make_prediction(models[i],X_train)), axis=1)
+        err_train[i] = eval_cat_err(y_train,y_hat_train)
+        err_cv[i] = eval_cat_err(y_cv,y_hat_cv)
+
+    fig, ax = plt.subplots(1,1,figsize=(6,4))
+    fig.canvas.toolbar_visible = False
+    fig.canvas.header_visible = False
+    fig.canvas.footer_visible = False
+    ax.set_title("error vs regularization",fontsize = 12)
+    ax.plot(lambdas, err_train, marker='o', label="train error", color = dlc["dlblue"])
+    ax.plot(lambdas, err_cv,    marker='o', label="cv error",    color = dlc["dlorange"])
+    ax.set_xscale('log')
+    ax.set_ylim(*ax.get_ylim())
+    ax.set_xlabel("Regularization (lambda)",fontsize = 14)
+    ax.set_ylabel("Error",fontsize = 14)
+    ax.legend()
+    fig.suptitle("Tuning Regularization",fontsize = 14)
+    ax.text(0.05,0.14,"Training Error\nlower than CV",fontsize=12, ha='left',transform=ax.transAxes,color = dlc["dlblue"])
+    ax.text(0.95,0.14,"Similar\nTraining, CV",    fontsize=12, ha='right',transform=ax.transAxes,color = dlc["dlblue"])
+    plt.show()
